@@ -1,0 +1,128 @@
+package jm.task.core.jdbc.util;
+
+import jm.task.core.jdbc.model.User;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Util {
+    public static void main(String[] args) {
+
+    }
+
+    public void createTable(String url, String userName, String userPassword) {
+        try (Connection connection = DriverManager.getConnection(url, userName, userPassword);
+             Statement statement = connection.createStatement()) {
+            String createDataBaseSQL = "CREATE DATABASE IF NOT EXISTS Users";
+            statement.execute(createDataBaseSQL);
+
+            String useDataBaseSQL = "USE Users";
+            statement.execute(useDataBaseSQL);
+
+            ResultSet resultSet = connection.getMetaData().getTables(
+                    null,
+                    null,
+                    "users",
+                    null
+            );
+
+            if (!resultSet.next()) {
+                String createTableSQL = "CREATE TABLE IF NOT EXISTS Users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), last_name VARCHAR(255), age TINYINT)";
+                statement.execute(createTableSQL);
+
+                System.out.println("Таблица создана");
+            } else {
+                System.out.println("Таблица уже существует");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void addUsersToTable(String url, String userName, String userPassword, List<User> man) {
+        try (Connection connection = DriverManager.getConnection(url, userName, userPassword)) {
+            String useDataBaseSQL = "USE Users";
+
+            try (Statement useStatement = connection.createStatement()) {
+                useStatement.execute(useDataBaseSQL);
+            }
+
+            String insertSQL = "INSERT INTO Users (name, last_name, age) VALUES (?, ?, ?)";
+
+            for (User user : man) {
+                try (PreparedStatement statement = connection.prepareStatement(insertSQL)) {
+                    statement.setString(1, user.getName());
+                    statement.setString(2, user.getLastName());
+                    statement.setByte(3, user.getAge());
+
+                    int rowsAffect = statement.executeUpdate();
+                    if (rowsAffect > 0) {
+                        System.out.println("Пользователь с именем " + user.getName() + " добавлен");
+
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void getAllUsers(String url, String userName, String userPassword) {
+        List<User> userList = new ArrayList<>(4);
+
+        try (Connection connection = DriverManager.getConnection(url, userName, userPassword);
+            Statement statement = connection.createStatement()) {
+            String selectSQL = "SELECT * FROM Users";
+
+            try (ResultSet resultSet = statement.executeQuery(selectSQL)) {
+                while (resultSet.next()) {
+                    String name = resultSet.getString("name");
+                    String lastName = resultSet.getString("last_name");
+                    byte age = resultSet.getByte("age");
+
+                    User user = new User(name, lastName, age);
+                    userList.add(user);
+                }
+                userList.forEach(user -> System.out.println(user.toString()));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void clearUsersTable(String url, String userName, String userPassword) {
+        try (Connection connection = DriverManager.getConnection(url, userName, userPassword);
+             Statement statement = connection.createStatement()) {
+            String clearTableSQL = "DELETE FROM Users";
+            statement.executeUpdate(clearTableSQL);
+            System.out.println("Таблица Users очищена");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteTable(String url, String userName, String userPassword) {
+        try (Connection connection = DriverManager.getConnection(url, userName, userPassword);
+             Statement statement = connection.createStatement()) {
+            ResultSet resultSet = connection.getMetaData().getTables(
+                    null,
+                    null,
+                    "users",
+                    null
+            );
+
+            if (resultSet.next()) {
+                String deleteTableSQL = "DROP TABLE IF EXISTS users";
+                statement.executeUpdate(deleteTableSQL);
+                System.out.println("База данных успешно удалена");
+            } else {
+                System.out.println("База данных не существует");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
