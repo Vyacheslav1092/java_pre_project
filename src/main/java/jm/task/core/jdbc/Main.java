@@ -20,6 +20,7 @@ public class Main {
 
         Util util = new Util();
 
+
         util.createTable(url, userName, userPassword);
         util.addUsersToTable(url, userName, userPassword, usersList);
         util.getAllUsers(url, userName, userPassword);

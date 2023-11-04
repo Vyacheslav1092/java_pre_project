@@ -11,6 +11,7 @@ public class Util {
 
     }
 
+
     public void createTable(String url, String userName, String userPassword) {
         try (Connection connection = DriverManager.getConnection(url, userName, userPassword);
              Statement statement = connection.createStatement()) {
