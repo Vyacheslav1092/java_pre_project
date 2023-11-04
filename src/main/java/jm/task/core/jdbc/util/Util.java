@@ -20,21 +20,15 @@ public class Util {
             String useDataBaseSQL = "USE Users";
             statement.execute(useDataBaseSQL);
 
-            ResultSet resultSet = connection.getMetaData().getTables(
-                    null,
-                    null,
-                    "users",
-                    null
-            );
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS `Users`.`users` (" +
+                    "`id` INT NOT NULL AUTO_INCREMENT, " +
+                    "`name` VARCHAR(45) NOT NULL, " +
+                    "`lastName` VARCHAR(45) NOT NULL, " +
+                    "`age` TINYINT NOT NULL, PRIMARY KEY (`id`))";
+            statement.execute(createTableSQL);
 
-            if (!resultSet.next()) {
-                String createTableSQL = "CREATE TABLE IF NOT EXISTS Users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), last_name VARCHAR(255), age TINYINT)";
-                statement.execute(createTableSQL);
+            System.out.println("Таблица создана");
 
-                System.out.println("Таблица создана");
-            } else {
-                System.out.println("Таблица уже существует");
-            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -48,7 +42,7 @@ public class Util {
                 useStatement.execute(useDataBaseSQL);
             }
 
-            String insertSQL = "INSERT INTO Users (name, last_name, age) VALUES (?, ?, ?)";
+            String insertSQL = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)";
 
             for (User user : man) {
                 try (PreparedStatement statement = connection.prepareStatement(insertSQL)) {
@@ -69,7 +63,7 @@ public class Util {
     }
 
     public void getAllUsers(String url, String userName, String userPassword) {
-        List<User> userList = new ArrayList<>(4);
+        List<User> userList = new ArrayList<>(10);
 
         try (Connection connection = DriverManager.getConnection(url, userName, userPassword);
             Statement statement = connection.createStatement()) {
@@ -78,7 +72,7 @@ public class Util {
             try (ResultSet resultSet = statement.executeQuery(selectSQL)) {
                 while (resultSet.next()) {
                     String name = resultSet.getString("name");
-                    String lastName = resultSet.getString("last_name");
+                    String lastName = resultSet.getString("lastName");
                     byte age = resultSet.getByte("age");
 
                     User user = new User(name, lastName, age);
@@ -114,7 +108,7 @@ public class Util {
             );
 
             if (resultSet.next()) {
-                String deleteTableSQL = "DROP TABLE IF EXISTS users";
+                String deleteTableSQL = "DROP TABLE IF EXISTS Users";
                 statement.executeUpdate(deleteTableSQL);
                 System.out.println("База данных успешно удалена");
             } else {
