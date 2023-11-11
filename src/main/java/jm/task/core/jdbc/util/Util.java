@@ -14,5 +14,16 @@ public class Util {
             throw new RuntimeException(e);
         }
     }
+
+    public static void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.close();
+                System.out.println("Соединение закрыто");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
 
