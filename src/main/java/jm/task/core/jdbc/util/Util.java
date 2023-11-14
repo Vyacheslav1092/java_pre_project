@@ -14,6 +14,7 @@ public class Util {
     private static final String URL = "jdbc:mysql://localhost:3306/Users";
     private static final String USER_NAME = "root";
     private static final String USER_PASSWORD = "Ww159753@";
+    private static final  SessionFactory sessionFactory;
 
     public static Connection getConnection() {
         try {
@@ -33,15 +34,13 @@ public class Util {
             }
         }
     }
-
-    public static SessionFactory configHibernate() {
-        SessionFactory sessionFactory = null;
+    static {
         try {
             Configuration configuration = new Configuration()
                     .setProperty("connection.driver_class","com.mysql.jdbc.Driver")
-                    .setProperty("hibernate.connection.url", "jdbc:mysql://localhost:3306/Users")
-                    .setProperty("hibernate.connection.username", "root")
-                    .setProperty("hibernate.connection.password", "Ww159753@")
+                    .setProperty("hibernate.connection.url", URL)
+                    .setProperty("hibernate.connection.username", USER_NAME)
+                    .setProperty("hibernate.connection.password", USER_PASSWORD)
                     .setProperty("hibernate.connection.characterEncoding", "utf8")
                     .setProperty("show_sql", "true")
                     .setProperty("format_sql", "true")
@@ -50,14 +49,17 @@ public class Util {
             sessionFactory = configuration.buildSessionFactory(builder.build());
             System.out.println("Соединение установлено");
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при настройке Hibernate", e);
+            throw new ExceptionInInitializerError("Ошибка при настройке Hibernate");
         }
+    }
+
+    public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
 
-    public static void closeConnectionHibernate() {
-        if (configHibernate() != null) {
-            configHibernate().close();
+    public static void closeSessionFactory() {
+        if (sessionFactory != null) {
+            sessionFactory.close();
             System.out.println("Соединение Hibernate закрыто");
         }
     }
